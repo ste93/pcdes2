@@ -38,16 +38,16 @@ import scala.collection.mutable.ArrayBuffer
          })
        }
 
-       case msg:PositionMessage => {
-         count+= 1
-         if (first){
+       case msg: PositionMessage => {
+         count += 1
+         if (first) {
            maxX = msg.positionX
            minX = msg.positionX
            minY = msg.positionY
            maxY = msg.positionY
-           first=false
+           first = false
          }
-         else{
+         else {
            if (msg.positionX > maxX) maxX = msg.positionX
            else if (msg.positionX < minX) minX = msg.positionX
            if (msg.positionY > maxY) maxY = msg.positionY
@@ -55,42 +55,57 @@ import scala.collection.mutable.ArrayBuffer
          }
          planetList.append(msg)
          if (count == Constants.PLANET_NUMBER) {
-
            minX -= 10E5
            minY -= 10E5
            maxX += 10E5
            maxY += 10E5
-           val rescaleX: Double =Constants.DRAWING_PANEL_SIZE_X / (maxX - minX)
+           val rescaleX: Double = Constants.DRAWING_PANEL_SIZE_X / (maxX - minX)
            val rescaleY: Double = Constants.DRAWING_PANEL_SIZE_Y / (maxY - minY)
-
-           Platform.runLater {
-                var planetLocal: ArrayBuffer[PositionMessage] = planetList.clone()
-                canvas.graphicsContext2D.clearRect(0, 0, Constants.DRAWING_PANEL_SIZE_X, Constants.DRAWING_PANEL_SIZE_Y)
-                planetLocal.foreach( element => {
-                 canvas.graphicsContext2D.fillOval((element.positionX - minX) * rescaleX + 15,
-                   (element.positionY - minY) * rescaleY + 15,
-                   10, 10)
-                  print((element.positionX - minX) * rescaleX + 15)
-                  println(" " + (element.positionY - minY) * rescaleY + 15)
-             })
+           val planetListLocal: ArrayBuffer[PositionMessage] = planetList.clone()
+           context.actorSelection("../Printer") ! new PrintMessage {
+             override val planetList: ArrayBuffer[PositionMessage] = planetListLocal
+             override val rescaleFactorX: Double = rescaleX
+             override val rescaleFactorY: Double = rescaleY
+             override val minX: Double = minX
+             override val minY: Double = minY
            }
-           //Thread.sleep(100) // wait for 1000 millisecond
 
+           self ! new LockMessage {}
            context.actorSelection("../Post") ! new PlanetListMessage {
              override val planetListInMessage: ArrayBuffer[PositionMessage] = planetList.clone()
            }
            planetList.clear()
            count = 0
            first = true
+
+
          }
        }
      }
+   }
+
+   class PrinterActor extends Actor {
+     def receive = {
+       case msg: PrintMessage => {
+         canvas.graphicsContext2D.clearRect(0, 0, Constants.DRAWING_PANEL_SIZE_X, Constants.DRAWING_PANEL_SIZE_Y)
+         msg.planetList.foreach(element => {
+           canvas.graphicsContext2D.fillOval((element.positionX - msg.minX) * msg.rescaleFactorY + 15,
+             (element.positionY - msg.minY) * msg.rescaleFactorY + 15,
+             10, 10)
+         }
+         )
+         context.actorSelection("../Graphic") ! new LockMessage{}
+       }
+     }
+
    }
 
    var actorSystem = ActorSystem("ActorSystem"); // Creating ActorSystem
    var actorInit = actorSystem.actorOf(Props[InitActor], "Init") //Creating actor
    actorSystem.actorOf(Props[SynchronizationActor], "Syn") //Creating actor
    actorSystem.actorOf(Props[GraphicActor], "Graphic") //Creating actor
+   actorSystem.actorOf(Props[PrinterActor], "Printer") //Creating actor
+
    var actorPost = actorSystem.actorOf(Props[PostActor], "Post") //Creating actor
 
 
@@ -122,5 +137,3 @@ import scala.collection.mutable.ArrayBuffer
    }
    actorInit ! "Init"                                                // Sending messages by using !
  }
-
-

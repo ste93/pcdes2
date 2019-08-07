@@ -50,3 +50,11 @@ abstract class LockMessage {
 abstract class PlanetListMessage{
   val planetListInMessage: ArrayBuffer[PositionMessage]
 }
+
+abstract class PrintMessage {
+  val planetList: ArrayBuffer[PositionMessage]
+  val rescaleFactorX: Double
+  val rescaleFactorY: Double
+  val minX: Double
+  val minY: Double
+}
