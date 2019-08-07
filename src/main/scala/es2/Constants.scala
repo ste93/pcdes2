@@ -13,5 +13,5 @@ object Constants {
   val BUTTON_SIZE_X: Int = PANEL_BORDER_SIZE_X - BUTTON_SPACING * 2
   val BUTTON_SIZE_Y = 40
   val MIN_DISTANCE_BETWEEN_PLANETS = 10
-  val MAX_MASS = 100
+  val MAX_MASS = 3 * 10E24
 }

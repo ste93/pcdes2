@@ -55,10 +55,11 @@ import scala.collection.mutable.ArrayBuffer
          }
          planetList.append(msg)
          //TODO remove
-         /*
-         println(msg.mass)
-         println(msg.positionX)
+
+         print(count + " " + msg.mass + " ")
+         print(msg.positionX + " ")
          println(msg.positionY)
+         /*
          println(msg.speedX)
          println(msg.speedY)
          println("count " + count)
