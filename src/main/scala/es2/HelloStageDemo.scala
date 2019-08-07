@@ -17,11 +17,11 @@ import scala.collection.mutable.ArrayBuffer
 
 
    class GraphicActor extends Actor with Stash{
-     var count = 0
-     var minX = 0
-     var minY = 0
-     var maxX = 0
-     var maxY = 0
+     var count: Double = 0
+     var minX: Double = 0
+     var minY: Double = 0
+     var maxX: Double = 0
+     var maxY: Double = 0
      var first = true
      var planetList: ArrayBuffer[PositionMessage] = new ArrayBuffer[PositionMessage]()
      def receive: PartialFunction[Any, Unit] = { //  Receiving message
@@ -54,35 +54,28 @@ import scala.collection.mutable.ArrayBuffer
            else if (msg.positionY < minY) minY = msg.positionY
          }
          planetList.append(msg)
-         //TODO remove
-
-         print(count + " " + msg.mass + " ")
-         print(msg.positionX + " ")
-         println(msg.positionY)
-         /*
-         println(msg.speedX)
-         println(msg.speedY)
-         println("count " + count)
-          */
-         //to here
-         Thread.sleep(100) // wait for 1000 millisecond
          if (count == Constants.PLANET_NUMBER) {
-           minX -= 100
-           minY -= 100
-           maxX += 100
-           maxY += 100
-           val rescaleX: Double = (maxX - minX).toDouble / Constants.DRAWING_PANEL_SIZE_X.toDouble
-           val rescaleY: Double = (maxY - minY).toDouble / Constants.DRAWING_PANEL_SIZE_Y.toDouble
+
+           minX -= 10E5
+           minY -= 10E5
+           maxX += 10E5
+           maxY += 10E5
+           val rescaleX: Double =Constants.DRAWING_PANEL_SIZE_X / (maxX - minX)
+           val rescaleY: Double = Constants.DRAWING_PANEL_SIZE_Y / (maxY - minY)
 
            Platform.runLater {
                 var planetLocal: ArrayBuffer[PositionMessage] = planetList.clone()
                 canvas.graphicsContext2D.clearRect(0, 0, Constants.DRAWING_PANEL_SIZE_X, Constants.DRAWING_PANEL_SIZE_Y)
                 planetLocal.foreach( element => {
-                 canvas.graphicsContext2D.fillOval(((element.positionX - 10D / 2) - minX) / rescaleX,
-                   ((element.positionY - 10D / 2) - minY) / rescaleY,
+                 canvas.graphicsContext2D.fillOval((element.positionX - minX) * rescaleX + 15,
+                   (element.positionY - minY) * rescaleY + 15,
                    10, 10)
+                  print((element.positionX - minX) * rescaleX + 15)
+                  println(" " + (element.positionY - minY) * rescaleY + 15)
              })
            }
+           //Thread.sleep(100) // wait for 1000 millisecond
+
            context.actorSelection("../Post") ! new PlanetListMessage {
              override val planetListInMessage: ArrayBuffer[PositionMessage] = planetList.clone()
            }
@@ -91,7 +84,6 @@ import scala.collection.mutable.ArrayBuffer
            first = true
          }
        }
-       //case _ =>println("Unknown message")      // Default case
      }
    }
 

@@ -3,8 +3,8 @@ package es2
 import scala.collection.mutable.ArrayBuffer
 
 abstract class DistanceRequestMessage{
-  var x: Int
-  var y: Int
+  var x: Double
+  var y: Double
 }
 
 abstract class DistanceResponseMessage{
@@ -22,17 +22,17 @@ abstract class PlanetName {
 abstract class CalculateAccelerationMessage{
   var numA : Int
   var numB : Int
-  var positionAX: Int
-  var positionAY: Int
-  var positionBX: Int
-  var positionBY: Int
+  var positionAX: Double
+  var positionAY: Double
+  var positionBX: Double
+  var positionBY: Double
   var massA: Double
   var massB: Double
 }
 
 abstract class PositionMessage {
-  var positionX: Int
-  var positionY: Int
+  var positionX: Double
+  var positionY: Double
   var mass: Double
   var speedX: Double
   var speedY: Double

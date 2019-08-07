@@ -15,8 +15,8 @@ class PositionActor extends Actor with Stash{
   var initialPositionReceived: Boolean = false
   var updatePosition:Boolean = true
   var positionUpdated: Boolean = false
-  var newPositionX: Int = _
-  var newPositionY: Int = _
+  var newPositionX: Double = _
+  var newPositionY: Double = _
 
   private def resetVariables(): Unit = {
     updatePosition = true
@@ -26,32 +26,39 @@ class PositionActor extends Actor with Stash{
     totalAccelerationX = 0
     totalAccelerationY = 0
     collisionsChecked = 0
-    //positionMessage = _
-    //totalCollisionsToCheck = _
-    //totalDistanceRequestMessageToReceive = _
     totalDistanceRequestMessageReceived = 0
   }
 
-  private def calculateNewPosition(initialPosition: Double, acceleration: BigDecimal, initialSpeed: Double): Int =
-    (initialPosition + 0.5 * acceleration.toDouble * Math.pow(Constants.DELTA_TIME, 2) + initialSpeed * Constants.DELTA_TIME).toInt
+  private def calculateNewPosition(initialPosition: Double, acceleration: BigDecimal, initialSpeed: Double): Double = {
+    initialPosition + 0.5 * acceleration.toDouble * Math.pow(Constants.DELTA_TIME, 2) + initialSpeed * Constants.DELTA_TIME
+  }
 
   private def calculateNewSpeed(acceleration: BigDecimal, initialSpeed: Double): Double =
     acceleration.toDouble * Constants.DELTA_TIME + initialSpeed
 
-  private def requestDistance(xParam: Int, yParam: Int, planetNumber: Int): Unit ={
+  /*
+  private def requestDistance(xParam: Double, yParam: Double, planetNumber: Int): Unit ={
     this.context.actorSelection("../Pos"  + planetNumber) ! new DistanceRequestMessage {
-      override var x: Int = xParam
-      override var y: Int = yParam
+      override var x: Double = xParam
+      override var y: Double = yParam
     }
   }
+   */
 
-  private def calculateDistance(x1: Int , x2: Int, y1: Int, y2: Int): Double = {
+  private def calculateDistance(x1: Double , x2: Double, y1: Double, y2: Double): Double = {
     math.sqrt(math.pow(x1-x2, 2) + math.pow(y1-y2, 2))
   }
 
-  private def calculateAndSend(): Unit = {
+  private def calculatePositions(): Unit = {
     newPositionX = calculateNewPosition(positionMessage.positionX, totalAccelerationX, positionMessage.speedX)
     newPositionY = calculateNewPosition(positionMessage.positionY, totalAccelerationY, positionMessage.speedY)
+  }
+
+  private def sendSynchronizationPlanetRequest(): Unit = {
+    calculatePositions()
+    this.context.actorSelection("../Syn") ! new PlanetName {
+      override var name: String = self.path.name
+    }
   }
 
   private def sendToGraphic(): Unit = {
@@ -100,8 +107,8 @@ class PositionActor extends Actor with Stash{
       else {
         msg.planetsToCheck.foreach(element => {
           this.context.actorSelection("../" + element.name) ! new DistanceRequestMessage {
-            override var x: Int = newPositionX
-            override var y: Int = newPositionY
+            override var x: Double = newPositionX
+            override var y: Double = newPositionY
           }
         })
       }
@@ -125,21 +132,18 @@ class PositionActor extends Actor with Stash{
     case msg:AccelerationForCalculatePositionMessage => {
       accelerationForCalculatePositionMessagesReceived  += 1
       totalAccelerationX = totalAccelerationX + msg.accelerationX
-      totalAccelerationY += msg.accelerationY
+      totalAccelerationY = totalAccelerationY +  msg.accelerationY
       if (accelerationForCalculatePositionMessagesReceived == Constants.PLANET_NUMBER - 1 && initialPositionReceived){
-        this.context.actorSelection("../Syn") ! new PlanetName {
-          override var name: String = self.path.name
-        }
+        sendSynchronizationPlanetRequest()
       }
     }
 
     case msg: PositionMessage => {
       initialPositionReceived = true
       positionMessage = msg
+
       if (accelerationForCalculatePositionMessagesReceived == Constants.PLANET_NUMBER - 1) {
-        this.context.actorSelection("../Syn") ! new PlanetName {
-          override var name: String = self.path.name
-        }
+        sendSynchronizationPlanetRequest()
       }
     }
   }

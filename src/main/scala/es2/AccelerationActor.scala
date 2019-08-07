@@ -19,20 +19,18 @@ class AccelerationActor extends Actor with Stash {
     }
 
     case msg:CalculateAccelerationMessage => {
-      var deltaX: Int = msg.positionAX - msg.positionBX
-      var deltaY: Int  = msg.positionAY - msg.positionBY
+      var msgToSend = msg
+
+      var deltaX: Double = msg.positionAX - msg.positionBX
+      var deltaY: Double  = msg.positionAY - msg.positionBY
       var lim: Int  = 2
-      //TODO
-      println("deltax "  + deltaX)
-      //TODO
-      println("deltay "  + deltaY)
 
       if (deltaX >= 0 && deltaX < lim) deltaX = lim
       if (deltaY >= 0 && deltaY < lim) deltaY = lim
       if (deltaX < 0 && deltaX > -lim) deltaX = -lim
       if (deltaY < 0 && deltaY > -lim) deltaY = -lim
-      var squaredDeltax: Int  = deltaX * deltaX
-      var squaredDeltay: Int  = deltaY * deltaY
+      var squaredDeltax: Double  = deltaX * deltaX
+      var squaredDeltay: Double  = deltaY * deltaY
       var forceOverMassSquared: BigDecimal = Constants.GRAVITY / (squaredDeltay + squaredDeltax)
       var accelerationA: BigDecimal = forceOverMassSquared * msg.massB
       var accelerationB: BigDecimal = forceOverMassSquared * msg.massA
@@ -60,8 +58,6 @@ class AccelerationActor extends Actor with Stash {
       this.context.actorSelection("../Pos"  + msg.numA) ! messageToSendPlanetA
       this.context.actorSelection("../Pos"  + msg.numB) ! messageToSendPlanetB
     }
-    //case _ =>println("Unknown message")      // Default case
   }
-
 }
 
