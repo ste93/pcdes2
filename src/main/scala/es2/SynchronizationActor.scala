@@ -22,9 +22,6 @@ class SynchronizationActor extends Actor  with Stash{
     }
 
     case msg: PlanetName => {
-      //TODO delete
-      println( "planetName received" + msg.name + self.path.name)
-      println(planetsUpdated.length)
       sender() ! new CollisionsToCheckMessage {
         override var planetsToCheck: ArrayBuffer[PlanetName] = planetsUpdated.clone()
       }

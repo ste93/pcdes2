@@ -21,23 +21,28 @@ class AccelerationActor extends Actor with Stash {
     case msg:CalculateAccelerationMessage => {
       var deltaX: Int = msg.positionAX - msg.positionBX
       var deltaY: Int  = msg.positionAY - msg.positionBY
-      var lim: Int  = 5
-      if (deltaX > 0 && deltaX < lim) deltaX = lim
-      if (deltaY > 0 && deltaY < lim) deltaY = lim
+      var lim: Int  = 2
+      //TODO
+      println("deltax "  + deltaX)
+      //TODO
+      println("deltay "  + deltaY)
+
+      if (deltaX >= 0 && deltaX < lim) deltaX = lim
+      if (deltaY >= 0 && deltaY < lim) deltaY = lim
       if (deltaX < 0 && deltaX > -lim) deltaX = -lim
       if (deltaY < 0 && deltaY > -lim) deltaY = -lim
       var squaredDeltax: Int  = deltaX * deltaX
       var squaredDeltay: Int  = deltaY * deltaY
-      var forceOverMassSquared: Double = Constants.GRAVITY / (squaredDeltay + squaredDeltax)
-      var accelerationA: Double = forceOverMassSquared * msg.massB
-      var accelerationB: Double = forceOverMassSquared * msg.massA
+      var forceOverMassSquared: BigDecimal = Constants.GRAVITY / (squaredDeltay + squaredDeltax)
+      var accelerationA: BigDecimal = forceOverMassSquared * msg.massB
+      var accelerationB: BigDecimal = forceOverMassSquared * msg.massA
       var messageToSendPlanetA: AccelerationForCalculatePositionMessage = new AccelerationForCalculatePositionMessage {
-        override var accelerationX: Double = _
-        override var accelerationY: Double = _
+        override var accelerationX: BigDecimal = _
+        override var accelerationY: BigDecimal = _
       }
       var messageToSendPlanetB: AccelerationForCalculatePositionMessage = new AccelerationForCalculatePositionMessage {
-        override var accelerationX: Double = _
-        override var accelerationY: Double = _
+        override var accelerationX: BigDecimal = _
+        override var accelerationY: BigDecimal = _
       }
       if (deltaY != 0) {
         var var1: Double = Math.sqrt(1 / (1 + squaredDeltax / squaredDeltay))

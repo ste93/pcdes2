@@ -39,8 +39,8 @@ abstract class PositionMessage {
 }
 
 abstract class AccelerationForCalculatePositionMessage {
-  var accelerationX: Double
-  var accelerationY: Double
+  var accelerationX: BigDecimal
+  var accelerationY: BigDecimal
 }
 
 abstract class LockMessage {

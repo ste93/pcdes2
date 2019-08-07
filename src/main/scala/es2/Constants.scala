@@ -3,7 +3,7 @@ package es2
 object Constants {
   val PLANET_NUMBER = 6
   val DELTA_TIME = 1
-  val GRAVITY: Double = 6.67408 * 10E-11
+  val GRAVITY: BigDecimal = 6.67408 * 10E-11
   val PANEL_SIZE_X = 1300
   val PANEL_SIZE_Y = 700
   val PANEL_BORDER_SIZE_X = 300

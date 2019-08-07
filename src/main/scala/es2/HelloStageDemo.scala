@@ -5,9 +5,9 @@ import scalafx.Includes._
 import scalafx.application.{JFXApp, Platform}
 import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
+import scalafx.scene.Scene
 import scalafx.scene.canvas.Canvas
-import scalafx.scene.{Scene, SubScene, canvas}
-import scalafx.scene.control.{Button, Label}
+import scalafx.scene.control.Button
 import scalafx.scene.layout.BorderPane
 import scalafx.scene.paint.Color._
 
@@ -35,7 +35,6 @@ import scala.collection.mutable.ArrayBuffer
            case msg => {
              stash()
            }
-
          })
        }
 
@@ -56,13 +55,16 @@ import scala.collection.mutable.ArrayBuffer
          }
          planetList.append(msg)
          //TODO remove
+         /*
          println(msg.mass)
          println(msg.positionX)
          println(msg.positionY)
          println(msg.speedX)
          println(msg.speedY)
          println("count " + count)
+          */
          //to here
+         Thread.sleep(100) // wait for 1000 millisecond
          if (count == Constants.PLANET_NUMBER) {
            minX -= 100
            minY -= 100
@@ -102,7 +104,6 @@ import scala.collection.mutable.ArrayBuffer
    for (i <- 0 until Constants.PLANET_NUMBER){
      for (j <- i + 1 until Constants.PLANET_NUMBER) {
        actorSystem.actorOf(Props[AccelerationActor], "Acc" + i + "_" + j)
-       println (i + " " + j)
      }
      actorSystem.actorOf(Props[PositionActor], "Pos" + i )
      //actorSystem.actorOf(Props[AccelerationForCalculatePositionMessage], "Pos" + i )
@@ -110,13 +111,12 @@ import scala.collection.mutable.ArrayBuffer
    val button = new Button("start/stop")
    button.onAction = (event: ActionEvent) =>  {
      actorPost ! new LockMessage {}
-     println(event)
    }
    var canvas = new Canvas(Constants.DRAWING_PANEL_SIZE_X, Constants.DRAWING_PANEL_SIZE_Y)
 
    canvas.graphicsContext2D.fill = Red
    stage = new JFXApp.PrimaryStage {
-     title.value = "Hello Stage"
+     title.value = "planet calculator"
      width = Constants.PANEL_SIZE_X
      height = Constants.PANEL_SIZE_Y
      scene = new Scene {
@@ -125,7 +125,6 @@ import scala.collection.mutable.ArrayBuffer
          right = button
          left = canvas
        }
-
      }
    }
    actorInit ! "Init"                                                // Sending messages by using !

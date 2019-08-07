@@ -1,7 +1,6 @@
 package es2
 
 import akka.actor.{ActorSystem, Props}
-import es2.{SynchronizationActor, AccelerationActor}
 
 
 
@@ -16,7 +15,6 @@ object Main{
     for (i <- 0 until Constants.PLANET_NUMBER){
       for (j <- i + 1 until Constants.PLANET_NUMBER) {
         actorSystem.actorOf(Props[AccelerationActor], "Acc" + i + "_" + j)
-        println (i + " " + j)
       }
       actorSystem.actorOf(Props[PositionActor], "Pos" + i )
       //actorSystem.actorOf(Props[AccelerationForCalculatePositionMessage], "Pos" + i )

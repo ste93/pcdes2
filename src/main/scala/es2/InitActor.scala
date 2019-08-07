@@ -11,16 +11,14 @@ class InitActor extends Actor{
 
     case msg:String => {
       var rand = new Random()
-      //TODO remove
-      //println("init")
       var planets: ArrayBuffer[PositionMessage] = new ArrayBuffer[PositionMessage]()
       for (i <- 1 to Constants.PLANET_NUMBER) {
         planets.append(new PositionMessage {
           override var positionX: Int = (rand.nextDouble() * Constants.DRAWING_PANEL_SIZE_X).toInt
           override var positionY: Int = (rand.nextDouble() * Constants.DRAWING_PANEL_SIZE_Y).toInt
           override var mass: Double = rand.nextDouble() * Constants.MAX_MASS
-          override var speedX: Double = rand.nextDouble() * 2 - 1
-          override var speedY: Double = rand.nextDouble() * 2 - 1
+          override var speedX: Double = rand.nextDouble() - 0.5
+          override var speedY: Double = rand.nextDouble() - 0.5
         })
       }
       context.actorSelection("../Post") ! new PlanetListMessage {

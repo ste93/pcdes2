@@ -10,8 +10,8 @@ class PositionActor extends Actor with Stash{
   var totalDistanceRequestMessageToReceive: Int = _
   var positionMessage : PositionMessage = _
   var accelerationForCalculatePositionMessagesReceived: Int = 0
-  var totalAccelerationX: Double = 0
-  var totalAccelerationY: Double = 0
+  var totalAccelerationX: BigDecimal = 0
+  var totalAccelerationY: BigDecimal = 0
   var initialPositionReceived: Boolean = false
   var updatePosition:Boolean = true
   var positionUpdated: Boolean = false
@@ -32,11 +32,11 @@ class PositionActor extends Actor with Stash{
     totalDistanceRequestMessageReceived = 0
   }
 
-  private def calculateNewPosition(initialPosition: Double, acceleration: Double, initialSpeed: Double): Int =
-    (initialPosition + 0.5 * acceleration * Math.pow(Constants.DELTA_TIME, 2) + initialSpeed * Constants.DELTA_TIME).toInt
+  private def calculateNewPosition(initialPosition: Double, acceleration: BigDecimal, initialSpeed: Double): Int =
+    (initialPosition + 0.5 * acceleration.toDouble * Math.pow(Constants.DELTA_TIME, 2) + initialSpeed * Constants.DELTA_TIME).toInt
 
-  private def calculateNewSpeed(acceleration: Double, initialSpeed: Double): Double =
-    acceleration * Constants.DELTA_TIME + initialSpeed
+  private def calculateNewSpeed(acceleration: BigDecimal, initialSpeed: Double): Double =
+    acceleration.toDouble * Constants.DELTA_TIME + initialSpeed
 
   private def requestDistance(xParam: Int, yParam: Int, planetNumber: Int): Unit ={
     this.context.actorSelection("../Pos"  + planetNumber) ! new DistanceRequestMessage {
@@ -57,7 +57,6 @@ class PositionActor extends Actor with Stash{
   private def sendToGraphic(): Unit = {
     positionUpdated = true
     unstashAll()
-    println("unstashing" + self.path.name)
     if(updatePosition) {
       positionMessage.positionX = newPositionX
       positionMessage.positionY = newPositionY
@@ -80,9 +79,6 @@ class PositionActor extends Actor with Stash{
 
 
     case msg: DistanceResponseMessage => {
-      //TODO remove
-      println("DistanceResponseMessage received" + self.path.name)
-
       collisionsChecked +=1
       if(msg.distance < Constants.MIN_DISTANCE_BETWEEN_PLANETS) {
         updatePosition = false
@@ -96,19 +92,13 @@ class PositionActor extends Actor with Stash{
     }
 
     case msg:CollisionsToCheckMessage => {
-      //TODO remove
-      println("CollisionsToCheckMessage received"+ self.path.name + " " + msg.planetsToCheck.length)
       totalCollisionsToCheck = msg.planetsToCheck.length
       totalDistanceRequestMessageToReceive = Constants.PLANET_NUMBER - totalCollisionsToCheck - 1
       if (totalCollisionsToCheck == 0) {
         sendToGraphic()
       }
       else {
-        //TODO remove
-        println(msg)
-        println(msg.planetsToCheck)
         msg.planetsToCheck.foreach(element => {
-          println(element.name)
           this.context.actorSelection("../" + element.name) ! new DistanceRequestMessage {
             override var x: Int = newPositionX
             override var y: Int = newPositionY
@@ -118,11 +108,7 @@ class PositionActor extends Actor with Stash{
     }
 
     case msg: DistanceRequestMessage => {
-      //TODO remove
-      println("DistanceRequestMessage received"+ self.path.name)
-
       if (!positionUpdated) {
-        println("stashing")
         stash()
       }
       else {
@@ -137,15 +123,11 @@ class PositionActor extends Actor with Stash{
     }
 
     case msg:AccelerationForCalculatePositionMessage => {
-      //TODO remove
-      println("AccelerationForCalculatePositionMessage received"+ self.path.name)
-
       accelerationForCalculatePositionMessagesReceived  += 1
-      totalAccelerationX += msg.accelerationX
+      totalAccelerationX = totalAccelerationX + msg.accelerationX
       totalAccelerationY += msg.accelerationY
       if (accelerationForCalculatePositionMessagesReceived == Constants.PLANET_NUMBER - 1 && initialPositionReceived){
         this.context.actorSelection("../Syn") ! new PlanetName {
-          println("to syn")
           override var name: String = self.path.name
         }
       }
